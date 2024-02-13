@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   barikoi_maps:
-    image: rilusmahmud/barikoi-maps:${TAG}
+    image: faiazhossain10/barikoi-maps:${TAG}
     container_name: barikoi-maps
     restart: unless-stopped
     env_file:
