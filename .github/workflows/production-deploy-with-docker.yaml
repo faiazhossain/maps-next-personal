@@ -1,0 +1,78 @@
+name: Docker Image CI/CD for Production
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
+
+      - name: Current Version
+        run: echo current version 1.0.1
+
+      - name: Save Tag
+        run: |
+          echo "TAG=${GITHUB_REF##*/}-0.1.0" >> $GITHUB_ENV
+
+      - name: Current Tag
+        run: echo "Tag is ${{ env.TAG }}"
+
+      - name: DockerHub Login
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/barikoi-maps:${GITHUB_REF##*/}
+
+      - name: Docker Push
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/barikoi-maps:${GITHUB_REF##*/}
+
+      # - name: Run deployment command
+      #   uses: appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SSH_HOST}}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     script: |
+      #       cd /home/barikoi/barikoi-maps
+      #       docker-compose down
+      #       docker image prune -af
+      #       TAG=main docker-compose pull
+      #       TAG=main docker-compose up -d
+
+      - name: Test Success
+        uses: rjstone/discord-webhook-notify@v1
+        if: success()
+        with:
+          severity: info
+          username: Barikoi Maps
+          details: Test Succeeded!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Test Failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: failure()
+        with:
+          severity: error
+          username: Barikoi Maps
+          details: Test Failed!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Test Cancelled
+        uses: rjstone/discord-webhook-notify@v1
+        if: cancelled()
+        with:
+          severity: warn
+          username: Barikoi Maps
+          details: Test Cancelled!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
