@@ -7,4 +7,4 @@ services:
     env_file:
       - .env.local
     ports:
-      - "4002:3000"
+      - "4005:3000"

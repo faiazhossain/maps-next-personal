@@ -37,18 +37,18 @@ jobs:
       - name: Docker Push
         run: docker push ${{ secrets.DOCKER_USERNAME }}/barikoi-maps:${GITHUB_REF##*/}
 
-      # - name: Run deployment command
-      #   uses: appleboy/ssh-action@v0.1.10
-      #   with:
-      #     host: ${{ secrets.SSH_HOST}}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_KEY }}
-      #     script: |
-      #       cd /home/barikoi/barikoi-maps
-      #       docker-compose down
-      #       docker image prune -af
-      #       TAG=main docker-compose pull
-      #       TAG=main docker-compose up -d
+      - name: Run deployment command
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST}}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/barikoi-maps
+            docker-compose down
+            docker image prune -af
+            TAG=main docker-compose pull
+            TAG=main docker-compose up -d
 
       # - name: Test Success
       #   uses: rjstone/discord-webhook-notify@v1
